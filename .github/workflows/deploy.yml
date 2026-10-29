@@ -42,7 +42,7 @@ jobs:
           
           ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
-      - name: Deploy Built Assets to cPanel
+      - name: Deploy Built Assets to cPanel (Streaming Tar)
         env:
           SSH_HOST_RAW: ${{ secrets.CPANEL_SSH_HOST }}
           SSH_USER_RAW: ${{ secrets.CPANEL_SSH_USER }}
@@ -55,6 +55,4 @@ jobs:
           SSH_PORT=${SSH_PORT:-22}
           DEST_PATH=$(echo -n "$DEST_PATH_RAW" | tr -d '\r\n ')
 
-          rsync -avz --delete \
-            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=no -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa" \
-            dist/ "${SSH_USER}@${SSH_HOST}:${DEST_PATH}/"
+          tar -czf - -C dist . | ssh -p "$SSH_PORT" -o StrictHostKeyChecking=no -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa "${SSH_USER}@${SSH_HOST}" "mkdir -p ${DEST_PATH} && tar -xzf - -C ${DEST_PATH}"
