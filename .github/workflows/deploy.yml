@@ -54,6 +54,9 @@ jobs:
               HostKeyAlgorithms +ssh-rsa
               ServerAliveInterval 30
               ServerAliveCountMax 3
+              ControlMaster auto
+              ControlPath ~/.ssh/control-%h-%p-%r
+              ControlPersist 10m
           EOF
           chmod 600 ~/.ssh/config
 
@@ -68,18 +71,14 @@ jobs:
           # 1. Package dist output
           tar -czf /tmp/frontend-deploy.tar.gz -C dist .
 
-          # 2. Test SSH connection
-          echo "Testing SSH connection to cPanel..."
-          ssh -v cpanel "echo 'SSH_AUTH_SUCCESS'"
-
-          # 3. Ensure remote directory exists
+          # 2. Ensure remote directory exists
           echo "Ensuring remote directory exists: ${DEST_PATH}"
           ssh cpanel "mkdir -p ${DEST_PATH}"
 
-          # 4. Upload archive
+          # 3. Upload archive
           echo "Uploading frontend archive..."
           scp /tmp/frontend-deploy.tar.gz cpanel:${DEST_PATH}/frontend-deploy.tar.gz
 
-          # 5. Extract archive on server
+          # 4. Extract archive on server
           echo "Extracting frontend archive..."
           ssh cpanel "cd ${DEST_PATH} && tar -xzf frontend-deploy.tar.gz && rm -f frontend-deploy.tar.gz"
