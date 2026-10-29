@@ -56,5 +56,5 @@ jobs:
           DEST_PATH=$(echo -n "$DEST_PATH_RAW" | tr -d '\r\n ')
 
           rsync -avz --delete \
-            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=no" \
+            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=no -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa" \
             dist/ "${SSH_USER}@${SSH_HOST}:${DEST_PATH}/"
