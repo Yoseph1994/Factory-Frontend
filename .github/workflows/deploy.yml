@@ -31,38 +31,55 @@ jobs:
           SSH_KEY: ${{ secrets.CPANEL_SSH_KEY }}
           SSH_PORT_RAW: ${{ secrets.CPANEL_SSH_PORT }}
           SSH_HOST_RAW: ${{ secrets.CPANEL_SSH_HOST }}
+          SSH_USER_RAW: ${{ secrets.CPANEL_SSH_USER }}
         run: |
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
           SSH_HOST=$(echo -n "$SSH_HOST_RAW" | tr -d '\r\n ')
+          SSH_USER=$(echo -n "$SSH_USER_RAW" | tr -d '\r\n ')
           SSH_PORT=$(echo -n "$SSH_PORT_RAW" | tr -d '\r\n ')
           SSH_PORT=${SSH_PORT:-22}
           
+          cat << EOF > ~/.ssh/config
+          Host cpanel
+              HostName ${SSH_HOST}
+              User ${SSH_USER}
+              Port ${SSH_PORT}
+              IdentityFile ~/.ssh/id_rsa
+              IdentitiesOnly yes
+              StrictHostKeyChecking no
+              PubkeyAcceptedKeyTypes +ssh-rsa
+              HostKeyAlgorithms +ssh-rsa
+              ServerAliveInterval 30
+              ServerAliveCountMax 3
+          EOF
+          chmod 600 ~/.ssh/config
+
           ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Package & Transfer to cPanel
         env:
-          SSH_HOST_RAW: ${{ secrets.CPANEL_SSH_HOST }}
-          SSH_USER_RAW: ${{ secrets.CPANEL_SSH_USER }}
-          SSH_PORT_RAW: ${{ secrets.CPANEL_SSH_PORT }}
           DEST_PATH_RAW: ${{ secrets.CPANEL_FRONTEND_PATH }}
         run: |
-          SSH_HOST=$(echo -n "$SSH_HOST_RAW" | tr -d '\r\n ')
-          SSH_USER=$(echo -n "$SSH_USER_RAW" | tr -d '\r\n ')
-          SSH_PORT=$(echo -n "$SSH_PORT_RAW" | tr -d '\r\n ')
-          SSH_PORT=${SSH_PORT:-22}
           DEST_PATH=$(echo -n "$DEST_PATH_RAW" | tr -d '\r\n ')
 
           # 1. Package dist output
           tar -czf /tmp/frontend-deploy.tar.gz -C dist .
 
-          # 2. Ensure remote directory exists
-          ssh -p "$SSH_PORT" -o StrictHostKeyChecking=no -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa "${SSH_USER}@${SSH_HOST}" "mkdir -p ${DEST_PATH}"
+          # 2. Test SSH connection
+          echo "Testing SSH connection to cPanel..."
+          ssh -v cpanel "echo 'SSH_AUTH_SUCCESS'"
 
-          # 3. Upload archive
-          scp -P "$SSH_PORT" -o StrictHostKeyChecking=no -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa /tmp/frontend-deploy.tar.gz "${SSH_USER}@${SSH_HOST}:${DEST_PATH}/frontend-deploy.tar.gz"
+          # 3. Ensure remote directory exists
+          echo "Ensuring remote directory exists: ${DEST_PATH}"
+          ssh cpanel "mkdir -p ${DEST_PATH}"
 
-          # 4. Extract archive on server
-          ssh -p "$SSH_PORT" -o StrictHostKeyChecking=no -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa "${SSH_USER}@${SSH_HOST}" "cd ${DEST_PATH} && tar -xzf frontend-deploy.tar.gz && rm -f frontend-deploy.tar.gz"
+          # 4. Upload archive
+          echo "Uploading frontend archive..."
+          scp /tmp/frontend-deploy.tar.gz cpanel:${DEST_PATH}/frontend-deploy.tar.gz
+
+          # 5. Extract archive on server
+          echo "Extracting frontend archive..."
+          ssh cpanel "cd ${DEST_PATH} && tar -xzf frontend-deploy.tar.gz && rm -f frontend-deploy.tar.gz"
