@@ -13,6 +13,7 @@ import AdminSettings from './components/AdminSettings';
 import FloorSupervisorView from './components/FloorSupervisorView';
 import AuthScreen from './components/AuthScreen';
 import InstallPrompt from './components/InstallPrompt';
+import BottomNav from './components/BottomNav';
 import { api } from './services/api';
 import { socket } from './services/socket';
 
@@ -33,6 +34,7 @@ export default function App() {
   const [isFloorMode, setIsFloorMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [socketConnected, setSocketConnected] = useState(socket.connected);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Core Data States
   const [dashboardData, setDashboardData] = useState({
@@ -445,7 +447,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50/60 flex text-slate-900 font-sans antialiased selection:bg-blue-600 selection:text-white">
       
-      {/* Enterprise Left Sidebar with Role Filter */}
+      {/* Enterprise Left Sidebar (Desktop Persistent, Mobile Slide-Over Drawer) */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -454,10 +456,12 @@ export default function App() {
         isFloorMode={isFloorMode}
         setIsFloorMode={setIsFloorMode}
         currentUser={currentUser}
+        isMobileOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main Workspace Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50/40">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50/40 relative">
         
         {/* PWA Mobile Installation Trigger */}
         <InstallPrompt />
@@ -473,11 +477,12 @@ export default function App() {
           onLogout={handleLogout}
           onSwitchActor={handleSwitchActor}
           socketConnected={socketConnected}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
 
-        {/* Scrollable Viewport */}
-        <main className="flex-1 overflow-y-auto px-6 sm:px-8 lg:px-10 py-8">
-          <div className="max-w-7xl mx-auto space-y-8">
+        {/* Scrollable Viewport with extra bottom padding for mobile bottom bar */}
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 pb-24 md:pb-8">
+          <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
             
             {/* Sleek, Single Alert Banner if Critical Items Exist */}
             <AlertBanner
@@ -593,6 +598,16 @@ export default function App() {
 
           </div>
         </main>
+
+        {/* Mobile Native Bottom Navigation Bar */}
+        <BottomNav
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenMenu={() => setIsMobileMenuOpen(true)}
+          isFloorMode={isFloorMode}
+          setIsFloorMode={setIsFloorMode}
+          alerts={alerts}
+        />
 
       </div>
 

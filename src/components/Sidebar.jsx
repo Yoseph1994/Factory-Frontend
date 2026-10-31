@@ -12,8 +12,7 @@ import {
   Smartphone,
   ChevronRight,
   Shield,
-  Radio,
-  Sparkles
+  X
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -34,7 +33,9 @@ export default function Sidebar({
   settings, 
   isFloorMode, 
   setIsFloorMode,
-  currentUser 
+  currentUser,
+  isMobileOpen,
+  onClose
 }) {
   const { t } = useLanguage();
   const inventoryAlertsCount = (alerts || []).filter(a => a.targetTab === 'inventory' || a.id?.includes('stock')).length;
@@ -112,38 +113,46 @@ export default function Sidebar({
 
   const canAccessFloorMode = !currentUser || ['plant_owner', 'production_manager', 'shift_supervisor', 'qc_inspector', 'maintenance_tech'].includes(currentUser.role);
 
-  return (
-    <aside className="w-64 bg-slate-950 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800/80 select-none shadow-xl z-20">
-      
+  const renderContent = (isMobile = false) => (
+    <>
       {/* Brand Header */}
-      <div className="h-18 px-5 flex items-center justify-between border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md">
+      <div className="h-16 px-5 flex items-center justify-between border-b border-slate-800/80 bg-slate-950/70">
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-blue-500/20 ring-1 ring-white/10">
-            <Building2 className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+            <Building2 className="w-4 h-4 text-white" />
           </div>
           <div>
-            <div className="font-extrabold text-white text-base tracking-tight leading-none flex items-center space-x-1.5">
+            <div className="font-extrabold text-white text-sm tracking-tight leading-none flex items-center space-x-1.5">
               <span>PLASTIX</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold border border-blue-500/30">
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-400 font-bold border border-blue-500/30">
                 PRO
               </span>
             </div>
-            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-1 truncate max-w-[150px]">
+            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-1 truncate max-w-[140px]">
               {settings?.factoryName ? 'Dukem Plant' : 'Ethiopian Polymers'}
             </div>
           </div>
         </div>
+
+        {isMobile && (
+          <button
+            onClick={onClose}
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Navigation Sections */}
-      <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
         {NAV_SECTIONS.map((section, idx) => {
           const visibleItems = section.items.filter(item => allowedTabs.includes(item.id));
           if (visibleItems.length === 0) return null;
 
           return (
             <div key={idx} className="space-y-1">
-              <div className="px-3 pb-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <div className="px-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 {section.title}
               </div>
 
@@ -157,11 +166,12 @@ export default function Sidebar({
                     onClick={() => {
                       setIsFloorMode(false);
                       setActiveTab(item.id);
+                      if (onClose) onClose();
                     }}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                       isActive
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20 font-bold'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-900/90'
+                        ? 'bg-blue-600 text-white shadow-sm font-bold'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
@@ -170,7 +180,7 @@ export default function Sidebar({
                     </div>
 
                     {item.badge && (
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums shadow-xs ${
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums ${
                         item.badge.type === 'danger'
                           ? 'bg-rose-500 text-white'
                           : 'bg-amber-500 text-slate-950 font-extrabold'
@@ -188,33 +198,33 @@ export default function Sidebar({
 
       {/* Shop Floor Terminal Mode Switcher */}
       {canAccessFloorMode && (
-        <div className="p-3.5 border-t border-slate-800/80 bg-slate-900/60">
+        <div className="p-3 border-t border-slate-800/80 bg-slate-900/40">
           <button
-            onClick={() => setIsFloorMode(!isFloorMode)}
-            className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-bold transition-all border ${
+            onClick={() => {
+              setIsFloorMode(!isFloorMode);
+              if (onClose) onClose();
+            }}
+            className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-bold transition-all border ${
               isFloorMode
-                ? 'bg-emerald-950/80 text-emerald-200 border-emerald-600 shadow-md shadow-emerald-950/40'
-                : 'bg-slate-900 text-slate-200 border-slate-700/80 hover:bg-slate-800/90 hover:border-slate-600 hover:text-white'
+                ? 'bg-emerald-950/80 text-emerald-200 border-emerald-600'
+                : 'bg-slate-900 text-slate-200 border-slate-800 hover:bg-slate-800 hover:text-white'
             }`}
           >
-            <div className="flex items-center space-x-2.5">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isFloorMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
-                <Smartphone className="w-4 h-4" />
-              </div>
+            <div className="flex items-center space-x-2">
+              <Smartphone className={`w-4 h-4 ${isFloorMode ? 'text-emerald-400' : 'text-slate-400'}`} />
               <div className="text-left">
-                <div className="leading-tight">{isFloorMode ? t('floorModeActive', 'Floor Terminal Active') : t('switchToFloorMode', 'Shop Floor Mode')}</div>
-                <div className="text-[10px] text-slate-400 font-normal mt-0.5">High-contrast touch UI</div>
+                <div className="leading-tight">{isFloorMode ? t('floorModeActive', 'Floor Mode Active') : t('switchToFloorMode', 'Shop Floor Mode')}</div>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
           </button>
         </div>
       )}
 
       {/* User Status Card */}
-      <div className="p-3.5 border-t border-slate-800/80 bg-slate-950 flex items-center justify-between">
-        <div className="flex items-center space-x-3 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-blue-400 shrink-0">
+      <div className="p-3 border-t border-slate-800/80 bg-slate-950 flex items-center justify-between">
+        <div className="flex items-center space-x-2.5 min-w-0">
+          <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-blue-400 shrink-0">
             {currentUser?.name ? currentUser.name.charAt(0) : 'U'}
           </div>
           <div className="min-w-0">
@@ -227,7 +237,30 @@ export default function Sidebar({
           </div>
         </div>
       </div>
+    </>
+  );
 
-    </aside>
+  return (
+    <>
+      {/* 1. Desktop Persistent Sidebar: Hidden on Mobile */}
+      <aside className="hidden md:flex md:w-64 bg-slate-950 text-slate-300 flex-col flex-shrink-0 border-r border-slate-800/80 select-none shadow-xl z-20 h-screen sticky top-0">
+        {renderContent(false)}
+      </aside>
+
+      {/* 2. Mobile Slide-Over Drawer */}
+      {isMobileOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={onClose}
+          />
+          {/* Slide-in Menu Panel */}
+          <aside className="relative w-72 max-w-[80vw] bg-slate-950 text-slate-300 flex flex-col h-full shadow-2xl z-10 border-r border-slate-800 animate-in slide-in-from-left duration-200">
+            {renderContent(true)}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

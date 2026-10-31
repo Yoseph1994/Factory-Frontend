@@ -152,41 +152,37 @@ export default function DashboardOverview({
 
       </div>
 
-      {/* Machinery Fleet Live Telemetry Section */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-card p-6 sm:p-7">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-5 mb-6 border-b border-slate-100 gap-3">
+      {/* Machinery Fleet Live Section */}
+      <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-4 border-b border-slate-100 gap-2">
           <div>
-            <div className="flex items-center space-x-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-              <Activity className="w-3.5 h-3.5 text-blue-600" />
-              <span>SHOP-FLOOR TELEMETRY</span>
-            </div>
-            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
               {t('dashboard.machineFleetStatus', 'Machinery Fleet Live Status')}
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">Real-time clamping tonnage, barrel heating zones, and active press operators.</p>
+            <p className="text-xs text-slate-500 mt-0.5">Clamping tonnage, barrel heat zones, and active operators.</p>
           </div>
           <button 
             onClick={() => onNavigateTab('maintenance')}
-            className="text-xs text-slate-700 hover:text-slate-900 font-bold px-3.5 py-2 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors self-start sm:self-auto shadow-xs"
+            className="text-xs text-slate-700 hover:text-slate-900 font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors self-start sm:self-auto"
           >
-            {t('nav.maintenance', 'Manage Press Fleet')}
+            {t('nav.maintenance', 'Manage Fleet')}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
           {(machines || []).map((mch) => {
             const isRunning = mch.status === 'Running';
             return (
               <div 
                 key={mch.id}
-                className="p-5 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:shadow-card transition-all duration-200 group"
+                className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white transition-all"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-extrabold text-slate-900 text-sm group-hover:text-blue-600 transition-colors">{mch.name}</h3>
-                    <span className="text-[11px] font-mono font-bold text-slate-400">{mch.code}</span>
+                    <h3 className="font-bold text-slate-900 text-sm">{mch.name}</h3>
+                    <span className="text-[11px] font-mono font-medium text-slate-400">{mch.code}</span>
                   </div>
-                  <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase ${
                     isRunning 
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
                       : 'bg-amber-50 text-amber-800 border-amber-200'
@@ -195,33 +191,33 @@ export default function DashboardOverview({
                   </span>
                 </div>
 
-                <div className="mt-4 space-y-2 text-xs text-slate-600">
+                <div className="mt-3.5 space-y-1.5 text-xs text-slate-600">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-medium">{t('dashboard.clampingTons', 'Clamping')}:</span>
-                    <span className="font-bold text-slate-900 tabular-nums">{mch.clampingTons} {t('common.tons', 'Tons')}</span>
+                    <span className="text-slate-400">{t('dashboard.clampingTons', 'Clamping')}:</span>
+                    <span className="font-semibold text-slate-900 tabular-nums">{mch.clampingTons} {t('common.tons', 'Tons')}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-medium">Power Rating:</span>
-                    <span className="font-bold text-slate-900 tabular-nums">{mch.powerKw} kW</span>
+                    <span className="text-slate-400">Power Rating:</span>
+                    <span className="font-semibold text-slate-900 tabular-nums">{mch.powerKw} kW</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-medium">{t('dashboard.barrelTemp', 'Barrel Temp')}:</span>
-                    <span className="font-bold text-slate-900 flex items-center tabular-nums">
-                      <Thermometer className="w-3.5 h-3.5 mr-1 text-rose-500" />
+                    <span className="text-slate-400">{t('dashboard.barrelTemp', 'Barrel Temp')}:</span>
+                    <span className="font-semibold text-slate-900 flex items-center tabular-nums">
+                      <Thermometer className="w-3.5 h-3.5 mr-1 text-slate-400" />
                       {mch.temperatureBarrelC}°C
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-medium">{t('dashboard.oilPressure', 'Hydraulic Pressure')}:</span>
-                    <span className="font-bold text-slate-900 flex items-center tabular-nums">
-                      <Gauge className="w-3.5 h-3.5 mr-1 text-blue-500" />
+                    <span className="text-slate-400">{t('dashboard.oilPressure', 'Hydraulic Pressure')}:</span>
+                    <span className="font-semibold text-slate-900 flex items-center tabular-nums">
+                      <Gauge className="w-3.5 h-3.5 mr-1 text-slate-400" />
                       {mch.oilPressureBar} bar
                     </span>
                   </div>
                   
-                  <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                    <span className="text-slate-400 font-medium">Assigned Tech:</span>
-                    <span className="font-bold text-slate-800 truncate max-w-[120px]">{mch.currentOperator}</span>
+                  <div className="pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Operator:</span>
+                    <span className="font-semibold text-slate-800 truncate max-w-[120px]">{mch.currentOperator}</span>
                   </div>
                 </div>
               </div>
@@ -231,23 +227,19 @@ export default function DashboardOverview({
       </div>
 
       {/* Production Queue & Fulfillment Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-card p-6 sm:p-7">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-5 mb-5 border-b border-slate-100 gap-3">
+      <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-4 border-b border-slate-100 gap-2">
           <div>
-            <div className="flex items-center space-x-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-              <ClipboardList className="w-3.5 h-3.5 text-blue-600" />
-              <span>ACTIVE SCHEDULE</span>
-            </div>
-            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
               {t('dashboard.recentWorkOrders', 'Current Production & Dispatch Queue')}
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">Order fulfillment status, molding cavity progress, and assigned presses.</p>
           </div>
           <button 
             onClick={() => onNavigateTab('orders')}
-            className="text-xs text-slate-700 hover:text-slate-900 font-bold px-3.5 py-2 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors self-start sm:self-auto shadow-xs"
+            className="text-xs text-slate-700 hover:text-slate-900 font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors self-start sm:self-auto"
           >
-            {t('nav.orders', 'View All Work Orders')}
+            {t('nav.orders', 'View All Orders')}
           </button>
         </div>
 
