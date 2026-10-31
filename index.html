@@ -26,13 +26,20 @@
     <div id="root" class="h-full"></div>
     <script type="module" src="/src/main.jsx"></script>
     
-    <!-- PWA Service Worker Registration -->
+    <!-- PWA Install Early Listener & Service Worker Registration -->
     <script>
+      window.deferredPWAInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.deferredPWAInstallPrompt = e;
+        window.dispatchEvent(new Event('pwa-install-ready'));
+      });
+
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
+        window.addEventListener('load', function () {
           navigator.serviceWorker.register('/sw.js')
-            .then((reg) => console.log('[PWA]: Service Worker Active, Scope:', reg.scope))
-            .catch((err) => console.warn('[PWA]: SW registration skipped:', err));
+            .then(function (reg) { console.log('[PWA]: Service Worker Active', reg.scope); })
+            .catch(function (err) { console.warn('[PWA]: SW registration failed:', err); });
         });
       }
     </script>

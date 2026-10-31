@@ -1,72 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { Download, X, Share, Building2, Check, ArrowRight } from 'lucide-react';
+import { Download, X, Share, Building2, MoreVertical, Smartphone } from 'lucide-react';
 
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [showAndroidGuide, setShowAndroidGuide] = useState(false);
 
   useEffect(() => {
-    // 1. Check if already installed as standalone PWA
+    // 1. Check if already running in standalone PWA mode
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                          window.navigator.standalone === true;
     if (isStandalone) {
-      return; // Already running as installed PWA app, do not prompt
+      return;
     }
 
-    // 2. Check if user already dismissed in this browser session
+    // 2. Check if user dismissed in this session
     const isDismissed = sessionStorage.getItem('pwa_install_dismissed');
     if (isDismissed) {
       return;
     }
 
-    // 3. Detect mobile device (screen size or mobile user agent)
-    const ua = window.navigator.userAgent.toLowerCase();
-    const isIPhoneOrIPad = /iphone|ipad|ipod/.test(ua);
-    const isAndroidOrMobile = /android|webos|blackberry|iemobile|opera mini/.test(ua) || window.innerWidth < 768;
+    // 3. Detect device
+    const ua = (window.navigator.userAgent || '').toLowerCase();
+    const isIPhoneOrIPad = /iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isMobileDevice = isIPhoneOrIPad || /android|webos|blackberry|iemobile|opera mini/.test(ua) || window.innerWidth < 768;
 
-    if (isIPhoneOrIPad || isAndroidOrMobile) {
-      setIsMobile(true);
-      if (isIPhoneOrIPad) {
-        setIsIOS(true);
-      }
-      
-      // Delay showing by 800ms so the initial page renders smoothly first
-      const timer = setTimeout(() => {
-        setShowPrompt(true);
-      }, 800);
-
-      return () => clearTimeout(timer);
+    if (isIPhoneOrIPad) {
+      setIsIOS(true);
     }
 
-    // 4. Listen for native Android/Chrome beforeinstallprompt event
+    // 4. Capture any early captured event
+    if (window.deferredPWAInstallPrompt) {
+      setDeferredPrompt(window.deferredPWAInstallPrompt);
+    }
+
+    // 5. Setup event listeners
     const handleBeforeInstall = (e) => {
       e.preventDefault();
-      setDeferredPrompt(e);
       window.deferredPWAInstallPrompt = e;
+      setDeferredPrompt(e);
       setShowPrompt(true);
     };
 
+    const handleEarlyEvent = () => {
+      if (window.deferredPWAInstallPrompt) {
+        setDeferredPrompt(window.deferredPWAInstallPrompt);
+      }
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('pwa-install-ready', handleEarlyEvent);
+
+    // If on mobile device, display install sheet after brief delay
+    let timer = null;
+    if (isMobileDevice) {
+      timer = setTimeout(() => {
+        setShowPrompt(true);
+      }, 600);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('pwa-install-ready', handleEarlyEvent);
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
-  const handleInstall = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setShowPrompt(false);
-        setDeferredPrompt(null);
+  const handleInstallClick = async () => {
+    const promptEvent = deferredPrompt || window.deferredPWAInstallPrompt;
+
+    if (promptEvent) {
+      try {
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          setShowPrompt(false);
+          setDeferredPrompt(null);
+          window.deferredPWAInstallPrompt = null;
+        }
+      } catch (err) {
+        console.warn('PWA prompt error:', err);
+        if (isIOS) {
+          setShowIOSGuide(true);
+        } else {
+          setShowAndroidGuide(true);
+        }
       }
     } else if (isIOS) {
       setShowIOSGuide(true);
     } else {
-      // Fallback for Android browsers if event is delayed
-      alert("To install: Tap your browser's menu (⋮) in the top right, then tap 'Install app' or 'Add to Home screen'.");
-      setShowPrompt(false);
+      // If Chrome hasn't fired the event yet or browser is in a webview
+      setShowAndroidGuide(true);
     }
   };
 
@@ -118,8 +144,8 @@ export default function InstallPrompt() {
 
           <div className="flex items-center space-x-3 pt-1">
             <button
-              onClick={handleInstall}
-              className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/30 transition-all flex items-center justify-center space-x-2"
+              onClick={handleInstallClick}
+              className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/30 transition-all flex items-center justify-center space-x-2 active:scale-95"
             >
               <Download className="w-4 h-4" />
               <span>Install to Home Screen</span>
@@ -135,7 +161,7 @@ export default function InstallPrompt() {
         </div>
       </div>
 
-      {/* iOS Safari Step-by-Step Home Screen Guide Modal */}
+      {/* iOS Safari Guide Modal */}
       {showIOSGuide && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-white text-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
@@ -144,7 +170,7 @@ export default function InstallPrompt() {
                 <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
                   <Building2 className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="font-extrabold text-sm text-slate-900">Install on iPhone</h3>
+                <h3 className="font-extrabold text-sm text-slate-900">Install on iPhone (Safari)</h3>
               </div>
               <button 
                 onClick={() => setShowIOSGuide(false)}
@@ -155,7 +181,7 @@ export default function InstallPrompt() {
             </div>
 
             <p className="text-xs text-slate-500 mb-4">
-              Apple requires installing directly through Safari in 3 quick taps:
+              Apple requires saving through Safari in 3 quick taps:
             </p>
 
             <ol className="space-y-3.5 text-xs text-slate-700 font-medium">
@@ -169,13 +195,61 @@ export default function InstallPrompt() {
               </li>
               <li className="flex items-start space-x-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">3</span>
-                <span>Tap <strong className="text-slate-900">"Add"</strong> in the top-right. The app icon will appear on your phone screen!</span>
+                <span>Tap <strong className="text-slate-900">"Add"</strong> in the top-right corner. The Plastix ERP icon will appear on your phone screen!</span>
               </li>
             </ol>
 
             <button
               onClick={() => {
                 setShowIOSGuide(false);
+                setShowPrompt(false);
+                sessionStorage.setItem('pwa_install_dismissed', 'true');
+              }}
+              className="w-full mt-5 py-3 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors shadow-sm"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Android Browser Fallback Guide Modal (If Chrome delayed the prompt event) */}
+      {showAndroidGuide && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white text-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2">
+                <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+                  <Building2 className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="font-extrabold text-sm text-slate-900">Install on Android</h3>
+              </div>
+              <button 
+                onClick={() => setShowAndroidGuide(false)}
+                className="text-slate-400 hover:text-slate-700 p-1 rounded"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <ol className="space-y-3.5 text-xs text-slate-700 font-medium">
+              <li className="flex items-start space-x-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">1</span>
+                <span>Tap your browser's <strong className="text-slate-900">Menu icon</strong> (the 3 vertical dots <MoreVertical className="w-4 h-4 inline text-slate-900" /> at the top right of Chrome).</span>
+              </li>
+              <li className="flex items-start space-x-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">2</span>
+                <span>Tap <strong className="text-slate-900">"Install app"</strong> or <strong className="text-slate-900">"Add to Home screen"</strong>.</span>
+              </li>
+              <li className="flex items-start space-x-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">3</span>
+                <span>Tap <strong className="text-slate-900">"Install"</strong> to add the app icon directly to your phone.</span>
+              </li>
+            </ol>
+
+            <button
+              onClick={() => {
+                setShowAndroidGuide(false);
                 setShowPrompt(false);
                 sessionStorage.setItem('pwa_install_dismissed', 'true');
               }}
