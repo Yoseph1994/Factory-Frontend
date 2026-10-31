@@ -11,6 +11,7 @@ import {
   Globe
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { api } from '../services/api';
 
 const ETHIOPIAN_ACTORS = [
   { role: 'plant_owner', titleKey: 'roles.plant_owner', phone: '+251911010101', name: 'Abebe Tadesse', dept: 'Executive' },
@@ -39,16 +40,9 @@ export default function AuthScreen({ onLoginSuccess }) {
     const targetPassword = customPassword || password;
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ phone: targetPhone, password: targetPassword })
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || t('auth.errorMissing', 'Authentication failed. Please verify credentials.'));
+      const data = await api.login(targetPhone, targetPassword);
+      if (!data || !data.success) {
+        throw new Error((data && data.error) || t('auth.errorMissing', 'Authentication failed. Please verify credentials.'));
       }
 
       onLoginSuccess(data.user);

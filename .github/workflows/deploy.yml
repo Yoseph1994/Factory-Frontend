@@ -24,6 +24,9 @@ jobs:
         run: npm ci
 
       - name: Build Production Assets
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
         run: npm run build
 
       - name: Configure SSH Key
