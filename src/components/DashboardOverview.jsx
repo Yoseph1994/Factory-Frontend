@@ -34,141 +34,119 @@ export default function DashboardOverview({
   return (
     <div className="space-y-8">
       
-      {/* Executive Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">
-            <span className="w-2 h-2 rounded-full bg-blue-600" />
-            <span>EXECUTIVE COMMAND CENTER</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             {t('dashboard.title', 'Plant Operations Dashboard')}
           </h1>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">
-            {t('dashboard.subtitle', 'Live production metrics, machinery clamping health, raw material silos, and financials.')}
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+            {t('dashboard.subtitle', 'Production metrics, machinery performance, raw material silos, and financials.')}
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 self-start sm:self-auto">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-bold shadow-xs">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
-            </span>
-            <span>{settings?.activeShiftName || 'Shift A (06:00 - 14:00)'}</span>
-            <span className="text-emerald-400">•</span>
-            <span className="text-emerald-900 font-mono">100% OEE</span>
-          </div>
+        <div className="flex items-center space-x-2 self-start sm:self-auto text-xs text-slate-600 bg-white px-3.5 py-1.5 rounded-lg border border-slate-200 shadow-xs">
+          <span className="font-semibold text-slate-800">{settings?.activeShiftName || 'Shift A (06:00 - 14:00)'}</span>
+          <span className="text-slate-300">•</span>
+          <span className="text-slate-500 font-medium">Fleet 4/4 Active</span>
         </div>
       </div>
 
-      {/* 4 Crisp World-Class KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* 4 Clean Minimal KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Card 1: Total Stock Valuation */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-card hover:shadow-card-hover transition-all duration-200 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-600" />
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">
             <span>{t('dashboard.totalPolymerStock', 'Total Polymer Stock')}</span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Boxes className="w-4 h-4" />
-            </div>
+            <Boxes className="w-4 h-4 text-slate-400" />
           </div>
           
           <div className="flex items-baseline space-x-1.5">
-            <span className="text-3xl font-extrabold text-slate-900 tabular-nums">
+            <span className="text-2xl font-bold text-slate-900 tabular-nums">
               {(kpis.totalPolymerStockKg || kpis.totalSiloStockKg || 0).toLocaleString()}
             </span>
-            <span className="text-sm font-bold text-slate-500 uppercase">{t('common.kg', 'kg')}</span>
+            <span className="text-xs font-medium text-slate-500">{t('common.kg', 'kg')}</span>
           </div>
 
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-400 font-medium">Asset Valuation:</span>
-            <span className="font-extrabold text-slate-900 tabular-nums text-sm">
+            <span className="text-slate-400">Valuation:</span>
+            <span className="font-bold text-slate-900 tabular-nums">
               {formatCurrency(kpis.totalStockValuation || 0)}
             </span>
           </div>
         </div>
 
         {/* Card 2: Fleet Utilization */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-card hover:shadow-card-hover transition-all duration-200 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">
             <span>{t('dashboard.fleetUtilization', 'Fleet Utilization')}</span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <Cpu className="w-4 h-4" />
-            </div>
+            <Cpu className="w-4 h-4 text-slate-400" />
           </div>
 
           <div className="flex items-baseline space-x-2">
-            <span className="text-3xl font-extrabold text-slate-900 tabular-nums">
+            <span className="text-2xl font-bold text-slate-900 tabular-nums">
               {kpis.activeMachinesRatio || '4/4'}
             </span>
-            <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              Optimal Fleet
+            <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+              Online
             </span>
           </div>
 
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-400 font-medium">Injection Presses:</span>
-            <span className="font-bold text-slate-800">4 Active In Shift</span>
+            <span className="text-slate-400">Injection Presses:</span>
+            <span className="font-semibold text-slate-800">4 Active In Shift</span>
           </div>
         </div>
 
         {/* Card 3: Regrind Recovery (Circular Economy) */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-card hover:shadow-card-hover transition-all duration-200 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">
             <span>{t('dashboard.regrindRecovery', 'Circular Scrap Recovery')}</span>
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-              <Recycle className="w-4 h-4" />
-            </div>
+            <Recycle className="w-4 h-4 text-slate-400" />
           </div>
 
           <div className="flex items-baseline space-x-2">
-            <span className="text-3xl font-extrabold text-slate-900 tabular-nums">
+            <span className="text-2xl font-bold text-slate-900 tabular-nums">
               {kpis.regrindRecoveryRatePercent || 88.5}%
             </span>
-            <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
-              Cost Saver
+            <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+              Recycled
             </span>
           </div>
 
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-400 font-medium">Shift Regrind:</span>
-            <span className="font-bold text-slate-800 tabular-nums">{kpis.totalScrapShiftKg || 320} kg recycled</span>
+            <span className="text-slate-400">Shift Regrind:</span>
+            <span className="font-semibold text-slate-800 tabular-nums">{kpis.totalScrapShiftKg || 320} kg</span>
           </div>
         </div>
 
         {/* Card 4: Active Work Orders */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-card hover:shadow-card-hover transition-all duration-200 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">
             <span>{t('dashboard.activeWorkOrders', 'Active Production Orders')}</span>
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-              <ClipboardList className="w-4 h-4" />
-            </div>
+            <ClipboardList className="w-4 h-4 text-slate-400" />
           </div>
 
           <div className="flex items-baseline justify-between">
             <div className="flex items-baseline space-x-1.5">
-              <span className="text-3xl font-extrabold text-slate-900 tabular-nums">
+              <span className="text-2xl font-bold text-slate-900 tabular-nums">
                 {kpis.activeWorkOrders || 5}
               </span>
-              <span className="text-xs font-bold text-slate-400">batches</span>
+              <span className="text-xs text-slate-400">batches</span>
             </div>
             <button 
               onClick={() => onNavigateTab('orders')}
-              className="text-xs text-blue-600 hover:text-blue-800 font-bold inline-flex items-center group-hover:translate-x-0.5 transition-transform"
+              className="text-xs text-slate-900 hover:underline font-semibold inline-flex items-center"
             >
-              <span>View Queue</span>
-              <ArrowUpRight className="w-4 h-4 ml-0.5" />
+              <span>View</span>
+              <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
             </button>
           </div>
 
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-400 font-medium">Plant Capacity:</span>
-            <span className="font-bold text-slate-800">3 Shifts Operating</span>
+            <span className="text-slate-400">Plant Capacity:</span>
+            <span className="font-semibold text-slate-800">3 Shifts Operating</span>
           </div>
         </div>
 

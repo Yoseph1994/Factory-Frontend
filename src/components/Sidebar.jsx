@@ -226,7 +226,6 @@ export default function Sidebar({
             </div>
           </div>
         </div>
-        <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50 shrink-0" title="Connected" />
       </div>
 
     </aside>

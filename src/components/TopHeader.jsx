@@ -79,33 +79,22 @@ export default function TopHeader({
   const currentLangObj = languages.find(l => l.code === language) || languages[0];
 
   return (
-    <header className="h-18 bg-white border-b border-slate-200/80 px-6 sm:px-8 flex items-center justify-between sticky top-0 z-30 select-none shadow-xs">
+    <header className="h-16 bg-white border-b border-slate-200 px-6 sm:px-8 flex items-center justify-between sticky top-0 z-30 select-none">
       
       {/* Breadcrumb & Section Title */}
-      <div className="flex items-center space-x-3.5">
-        <div className="flex items-center text-xs space-x-2">
-          <span className="font-semibold text-slate-400 uppercase tracking-wider">{t('header.operations', 'OPERATIONS')}</span>
-          <span className="text-slate-300">/</span>
-          <span className="font-extrabold text-slate-900 text-sm tracking-tight">{tabLabels[activeTab] || t('header.workspace', 'Workspace')}</span>
-        </div>
-
-        {/* Live Socket Status Dot */}
-        <div className="hidden md:flex items-center space-x-2 pl-3.5 border-l border-slate-200 text-xs font-semibold text-slate-600">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${socketConnected ? 'bg-emerald-400' : 'bg-slate-300'}`} />
-            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${socketConnected ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-          </span>
-          <span className="font-medium">{socketConnected ? 'Real-Time Sync' : 'Connecting...'}</span>
-        </div>
+      <div className="flex items-center space-x-2.5 text-xs text-slate-500">
+        <span className="font-medium text-slate-400">{t('header.operations', 'Operations')}</span>
+        <span>/</span>
+        <span className="font-bold text-slate-900 text-sm tracking-tight">{tabLabels[activeTab] || t('header.workspace', 'Workspace')}</span>
       </div>
 
       {/* Right Controls */}
       <div className="flex items-center space-x-3">
         
-        {/* Plant Clock / Shift Badge */}
-        <div className="hidden lg:flex items-center space-x-2.5 text-xs text-slate-600 bg-slate-50/80 px-3.5 py-1.5 rounded-lg border border-slate-200/80">
+        {/* Plant Clock / Shift */}
+        <div className="hidden lg:flex items-center space-x-2 text-xs text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
           <Clock className="w-3.5 h-3.5 text-slate-400" />
-          <span className="font-bold text-slate-800">{settings?.activeShiftName || 'Shift A (Day)'}</span>
+          <span className="font-semibold text-slate-800">{settings?.activeShiftName || 'Shift A'}</span>
           <span className="text-slate-300">•</span>
           <span className="font-mono text-slate-500 tabular-nums">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
