@@ -12,6 +12,7 @@ import EmployeePayrollModule from './components/EmployeePayrollModule';
 import AdminSettings from './components/AdminSettings';
 import FloorSupervisorView from './components/FloorSupervisorView';
 import AuthScreen from './components/AuthScreen';
+import InstallPrompt from './components/InstallPrompt';
 import { api } from './services/api';
 import { socket } from './services/socket';
 
@@ -431,7 +432,12 @@ export default function App() {
 
   // If not authenticated, show World-Class Login Screen
   if (!currentUser) {
-    return <AuthScreen onLoginSuccess={handleSetUser} />;
+    return (
+      <>
+        <InstallPrompt />
+        <AuthScreen onLoginSuccess={handleSetUser} />
+      </>
+    );
   }
 
   const alerts = dashboardData.alerts || [];
@@ -453,6 +459,9 @@ export default function App() {
       {/* Main Workspace Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50/40">
         
+        {/* PWA Mobile Installation Trigger */}
+        <InstallPrompt />
+
         {/* Sticky Top Header with User Profile, Role Switcher and Socket Indicator */}
         <TopHeader
           activeTab={activeTab}
